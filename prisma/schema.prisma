@@ -1,0 +1,74 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider     = "mysql"
+  url          = env("DATABASE_URL")
+  relationMode = "prisma"
+}
+
+model Users {
+  id        Int        @id @default(autoincrement())
+  name      String
+  email     String     @unique
+  password  String
+  createdAt DateTime   @default(now())
+  Posts     Posts[]
+  Critics   Critics[]
+  Comments  Comments[]
+}
+
+model Categories {
+  id   Int    @id @default(autoincrement())
+  name String
+}
+
+model Posts {
+  id          Int        @id @default(autoincrement())
+  name        String
+  category_id Int
+  contents    String?
+  userId      Int
+  createdAt   DateTime   @default(now())
+  views       Int        @default(0)
+  likes       Int        @default(0)
+  user        Users      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Comments    Comments[]
+
+  @@index([category_id], name: "category_id")
+  @@index([userId])
+}
+
+model Critics {
+  id          Int      @id @default(autoincrement())
+  name        String
+  category_id Int
+  contents    String?
+  userId      Int
+  createdAt   DateTime @default(now())
+  views       Int      @default(0)
+  likes       Int      @default(0)
+  user        Users    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([category_id], name: "category_id")
+  @@index([userId])
+}
+
+model Comments {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  postId    Int?
+  contents  String?
+  likes     Int      @default(0)
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+  user      Users    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post      Posts?   @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([postId])
+}
